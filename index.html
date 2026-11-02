@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>排球 5-1 站位与打法分析器 | 输入你的球队，给出跑位和建议</title>
+<meta name="description" content="免费排球战术工具：可视化 5-1 阵型六轮站位、二传插上与反轮；输入你队球员的身高、扣球高度、拦网高度，自动推荐阵型（5-1/6-2/4-2）、逐轮跑位与进攻打法，并与各国国家队身体条件对比。">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body>
+
+<header class="top">
+  <div class="top-inner">
+    <a class="logo" href="./">🏐 排球<span>战术台</span></a>
+    <nav class="nav">
+      <a href="#court">轮次站位</a>
+      <a href="#score">比赛计分</a>
+      <a href="#team">球队录入</a>
+      <a href="#result">分析报告</a>
+      <a href="#world">世界数据</a>
+      <a href="#guide">教程</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero">
+    <h1>输入你队 6 个球员的身体条件，<br>看清 5-1 怎么转、球该给谁。</h1>
+    <p class="sub">六轮站位与二传插上 · 现场计分并跟着轮转 · 自动推荐阵型（5-1 / 6-2 / 4-2） · 逐轮进攻与跑位建议 · 和世界强队比身高与扣球</p>
+    <div class="hero-actions">
+      <a class="btn primary" href="#team">开始录入我的球队</a>
+      <a class="btn ghost" href="#court">先看 5-1 站位演示</a>
+    </div>
+  </section>
+
+  <!-- ============ ① 轮次站位 ============ -->
+  <section id="court" class="panel">
+    <div class="panel-head">
+      <h2><span class="mno">①</span>六轮站位与二传插上</h2>
+      <div class="hint">点球员可拖动；◀ ▶ 或键盘 ← → 切轮次。</div>
+    </div>
+
+    <div class="court-wrap">
+      <div class="court-tools">
+        <div class="tool-row">
+          <span class="label">轮次</span>
+          <button class="icon-btn" id="prevRound" title="上一轮">◀</button>
+          <span class="round-badge" id="roundBadge">第 1 轮</span>
+          <button class="icon-btn" id="nextRound" title="下一轮">▶</button>
+        </div>
+        <div class="tool-row">
+          <span class="label">二传在</span>
+          <select id="setterPos" title="二传起始位置（1-6 号位）">
+            <option value="1">1 号位</option>
+            <option value="6" selected>6 号位</option>
+            <option value="5">5 号位</option>
+            <option value="4">4 号位</option>
+            <option value="3">3 号位</option>
+            <option value="2">2 号位</option>
+          </select>
+        </div>
+        <div class="tool-row">
+          <label class="switch"><input type="checkbox" id="showArrow" checked><span>显示插上/跑位箭头</span></label>
+        </div>
+        <div class="tool-row">
+          <label class="switch"><input type="checkbox" id="showThreat" checked><span>标出进攻强点</span></label>
+        </div>
+        <div class="tool-row">
+          <button class="btn ghost small" id="toggleShift" aria-pressed="false" title="标准站位是发球前的位置；点一下变成接发球时的实际站位">变化：接发球站位</button>
+        </div>
+        <div class="legend">
+          <span><i class="dot c-setter"></i>二传</span>
+          <span><i class="dot c-outside"></i>主攻</span>
+          <span><i class="dot c-middle"></i>副攻</span>
+          <span><i class="dot c-opposite"></i>接应</span>
+          <span><i class="dot c-libero"></i>自由人</span>
+        </div>
+      </div>
+
+      <div class="court-side">
+        <div class="court" id="courtBoard">
+          <div class="attack">进攻区</div>
+          <div class="net"></div>
+          <div class="net-label">▲ 球网（中线）</div>
+          <div class="court-grid">
+            <div class="slot" data-pos="4"><span>4</span></div>
+            <div class="slot" data-pos="3"><span>3</span></div>
+            <div class="slot" data-pos="2"><span>2</span></div>
+            <div class="slot" data-pos="5"><span>5</span></div>
+            <div class="slot" data-pos="6"><span>6</span></div>
+            <div class="slot" data-pos="1"><span>1</span></div>
+          </div>
+          <svg class="arrows" id="arrows"></svg>
+          <div class="markers" id="markers"></div>
+          <div class="front-line"><span>前排</span><span>后排</span></div>
+        </div>
+        <div class="round-info" id="roundInfo"></div>
+      </div>
+    </div>
+
+    <details class="how">
+      <summary>这个图怎么读？</summary>
+      <p>前排是 2、3、4 号位，后排是 1、5、6 号位。轮转方向是<b>顺时针</b>：拿到发球权时全队按 1→6→5→4→3→2 转一位。二传在后排（1/5/6）时要插上到网前 2-3 号位之间，前排那一轮不用插上。严格的“越位”只判发球出手那一刻，发球一出手就变成接发球阵型。</p>
+    </details>
+  </section>
+
+  <!-- ============ ② 比赛计分 ============ -->
+  <section id="score" class="panel">
+    <div class="panel-head">
+      <h2><span class="mno">②</span>比赛计分</h2>
+      <div class="hint">每球得分制。接发球方赢球 → 换发球并轮转，可自动带动上面的站位。</div>
+    </div>
+
+    <div class="score-board">
+      <div class="sc-team" id="scTeamA">
+        <input class="sc-name" id="scNameA" value="我方" maxlength="10" aria-label="我方队名">
+        <div class="sc-num" id="scA">0</div>
+        <div class="sc-serve" id="scServeA">发球</div>
+        <button class="btn primary sc-btn" id="scBtnA">得分 +1</button>
+      </div>
+      <div class="sc-mid">
+        <div class="sc-sets"><span id="scSetsA">0</span><i>:</i><span id="scSetsB">0</span></div>
+        <div class="sc-setno" id="scSetNo">第 1 局</div>
+        <div class="sc-target" id="scTarget">25 分制 · 需领先 2 分</div>
+        <div class="sc-log" id="scLog"></div>
+      </div>
+      <div class="sc-team" id="scTeamB">
+        <input class="sc-name" id="scNameB" value="对手" maxlength="10" aria-label="对手队名">
+        <div class="sc-num" id="scB">0</div>
+        <div class="sc-serve" id="scServeB">发球</div>
+        <button class="btn ghost sc-btn" id="scBtnB">得分 +1</button>
+      </div>
+    </div>
+
+    <div class="sc-tools">
+      <label class="field inline"><span>赛制</span>
+        <select id="scBestOf">
+          <option value="5" selected>五局三胜</option>
+          <option value="3">三局两胜</option>
+        </select>
+      </label>
+      <label class="switch"><input type="checkbox" id="scAutoRotate" checked><span>我方接发球得分时自动轮转站位</span></label>
+      <button class="btn small ghost" id="scUndo">撤销上一分</button>
+      <button class="btn small ghost" id="scResetSet">重置本局</button>
+      <button class="btn small ghost" id="scResetAll">重置全场</button>
+    </div>
+    <div class="sc-msg" id="scMsg"></div>
+  </section>
+
+  <!-- ============ ③ 球队录入 ============ -->
+  <section id="team" class="panel">
+    <div class="panel-head">
+      <h2><span class="mno">③</span>录入你队的 6 个球员</h2>
+      <div class="hint">只填身高也能算；扣球/拦网留空按身高估算并标“估”。</div>
+    </div>
+
+    <div class="sub-mod">
+      <div class="sub-head">
+        <h3>身体数据</h3>
+        <span class="tip">体重会算 BMI 档位（轻 / 均衡 / 微胖 / 胖），并改变跑位图</span>
+      </div>
+      <div class="team-tools">
+        <button class="btn small" id="loadDemo">载入示例队伍</button>
+        <button class="btn small ghost" id="resetTeam">清空重填</button>
+        <span class="tip">示例是一支普通校队，先看结果长什么样。</span>
+      </div>
+      <div class="cards" id="playerCards"></div>
+      <p class="fine">第 1 个框填二传，其余 5 个按顺序站位（默认从 6 号位往顺时针排）；鼠标悬停球场上的球员可以看每项数据，双击球员可改名字和位置。</p>
+    </div>
+
+    <div class="sub-mod">
+      <div class="sub-head">
+        <h3>队伍自评</h3>
+        <span class="tip">这三项只影响打法与战术推荐，不影响身高体重计算</span>
+      </div>
+      <div class="traits">
+        <div class="traits-grid">
+          <label class="field"><span>一传水平</span>
+            <select id="recvLevel">
+              <option value="1">偏弱：经常不到位</option>
+              <option value="2" selected>一般：到位但不稳</option>
+              <option value="3">强：稳定送三米线</option>
+            </select>
+          </label>
+          <label class="field"><span>二传水平</span>
+            <select id="setterLevel">
+              <option value="1">偏弱：不稳、跑动慢</option>
+              <option value="2" selected>一般：能组织缺变化</option>
+              <option value="3">强：手感好、能传背飞</option>
+            </select>
+          </label>
+          <label class="field"><span>攻手实力</span>
+            <select id="hitLevel">
+              <option value="1">偏弱：容易被拦死</option>
+              <option value="2" selected>一般：能打缺硬实力</option>
+              <option value="3">强：前排有稳定得分点</option>
+            </select>
+          </label>
+        </div>
+      </div>
+    </div>
+
+    <div class="team-actions">
+      <button class="btn primary big" id="analyzeBtn">生成分析报告 →</button>
+    </div>
+  </section>
+
+  <!-- ============ ④ 分析报告 ============ -->
+  <section id="result" class="panel">
+    <div class="panel-head">
+      <h2><span class="mno">④</span>阵型与打法分析</h2>
+      <div class="hint">结论由规则引擎按你填的数据实时算，不是固定答案。</div>
+    </div>
+    <div id="resultBody" class="result-body">
+      <p class="empty">先录入球员，然后点“生成分析报告”。</p>
+    </div>
+  </section>
+
+  <!-- ============ ⑤ 世界数据 ============ -->
+  <section id="world" class="panel">
+    <div class="panel-head">
+      <h2><span class="mno">⑤</span>世界强队身体条件</h2>
+      <div class="hint">公开报道整理，用来看差距、定目标。不满 5 人的队伍不算平均值，只列个人数据。</div>
+    </div>
+    <div class="world-tools">
+      <button class="btn small" id="genderW">女排</button>
+      <button class="btn small ghost" id="genderM">男排</button>
+      <span class="tip" id="worldCount"></span>
+      <button class="btn small ghost" id="worldToggle" aria-pressed="false">展开全部</button>
+    </div>
+    <div class="world-grid" id="worldGrid"></div>
+    <p class="source">数据表：<a href="players.json" target="_blank">players.json</a>（可在 GitHub 上直接改）。</p>
+  </section>
+
+  <!-- ============ ⑥ 教程 ============ -->
+  <section id="guide" class="panel">
+    <div class="panel-head">
+      <h2><span class="mno">⑥</span>排球跑位教程</h2>
+      <div class="hint">看完工具，再系统理解规则。</div>
+    </div>
+    <div class="guide-grid">
+      <a class="guide-card" href="guide/weak-team-tactics.html">
+        <b>一传差 / 二传弱 / 攻手不强怎么打</b><span>按短板改战术、按体重调跑位、能配合的战术清单。</span>
+      </a>
+      <a class="guide-card" href="guide/5-1-rotation.html">
+        <b>5-1 阵型六轮站位</b><span>二传为什么要插上？六个轮次分别怎么站？</span>
+      </a>
+      <a class="guide-card" href="guide/setter-penetration.html">
+        <b>二传插上详解</b><span>发球后几秒内到位、怎么跑、什么情况下别插上。</span>
+      </a>
+      <a class="guide-card" href="guide/opposite-rotation.html">
+        <b>反轮（接应在 4 号位）</b><span>接应轮到前排 4 号位时，一传怎么接、进攻怎么打。</span>
+      </a>
+      <a class="guide-card" href="guide/6-2-formation.html">
+        <b>6-2 / 4-2 阵型</b><span>二传少、身高不占优的时候，该不该换阵型。</span>
+      </a>
+      <a class="guide-card" href="guide/physical-standard.html">
+        <b>排球身体条件参考</b><span>身高、扣球高度、拦网高度差多少算差距。</span>
+      </a>
+      <a class="guide-card" href="guide/reception-shift.html">
+        <b>接发球站位与轮转</b><span>一传怎么接、谁接、后排怎么补位。</span>
+      </a>
+      <a class="guide-card" href="guide/scoring-rules.html">
+        <b>排球计分规则</b><span>每球得分制、25 分领先 2 分、决胜局 15 分、什么时候轮转。</span>
+      </a>
+    </div>
+  </section>
+
+  <!-- 广告位占位（AdSense 上线后替换） -->
+  <div class="ad-slot">
+    <span>广告位</span>
+    <small>（流量起来后接 AdSense）</small>
+  </div>
+
+  <section class="panel small-panel">
+    <h2>关于数据与免责</h2>
+    <p class="fine">球员身体数据来自 FIVB、各国排协与公开媒体报道，只做对比参考；身高、扣球高度、拦网高度是球员公开资料，不同年份会有出入。页面会根据身高给出经验估算值并标注“估”，不构成体能测试结论。本工具面向业余、校队、体校队伍做战术参考。</p>
+  </section>
+</main>
+
+<footer class="foot">
+  <div>排球战术台 · 纯静态零依赖 · 数据由 <a href="players.json">players.json</a> 提供</div>
+  <div class="foot-links">
+    <a href="guide/5-1-rotation.html">5-1 站位</a>
+    <a href="guide/setter-penetration.html">二传插上</a>
+    <a href="guide/6-2-formation.html">6-2 阵型</a>
+  </div>
+</footer>
+
+<dialog id="posDialog">
+  <form method="dialog" class="dialog-body">
+    <h3>修改这名球员</h3>
+    <div class="d-row"><span>姓名</span><input id="dlgName" maxlength="12" placeholder="可留空"></div>
+    <div class="d-row"><span>位置</span>
+      <select id="dlgPos">
+        <option value="二传">二传</option>
+        <option value="主攻">主攻</option>
+        <option value="副攻">副攻</option>
+        <option value="接应">接应</option>
+        <option value="自由人">自由人</option>
+      </select>
+    </div>
+    <div class="d-btns">
+      <button value="cancel" class="btn ghost">取消</button>
+      <button value="ok" class="btn primary">确定</button>
+    </div>
+  </form>
+</dialog>
+
+<script src="assets/app.js"></script>
+</body>
+</html>

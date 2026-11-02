@@ -1,0 +1,11 @@
+# Visual Studio 的本地索引/缓存，不要提交
+.vs/
+bin/
+obj/
+*.user
+*.suo
+
+# 系统垃圾文件
+.DS_Store
+Thumbs.db
+desktop.ini

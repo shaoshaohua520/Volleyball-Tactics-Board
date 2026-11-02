@@ -1,0 +1,26 @@
+/* 教程页共用样式（依赖 assets/style.css） */
+.art-wrap{max-width:1120px;margin:0 auto;padding:26px 20px 50px;display:grid;grid-template-columns:1fr 240px;gap:28px;align-items:start}
+.art{background:linear-gradient(180deg,var(--panel),var(--bg-2));border:1px solid var(--line);border-radius:var(--radius);padding:26px 28px;min-width:0}
+.crumb{font-size:13px;color:var(--muted);margin-bottom:14px}
+.crumb a{color:var(--muted)}
+.art h1{font-size:26px;margin:0 0 8px;line-height:1.4}
+.art .lead{color:var(--muted);font-size:14.5px;margin:0 0 20px;border-left:3px solid var(--accent);padding-left:12px}
+.art h2{font-size:19px;margin:30px 0 10px;padding-bottom:6px;border-bottom:1px solid var(--line)}
+.art h3{font-size:15.5px;margin:20px 0 8px;color:var(--accent-2)}
+.art p,.art li{font-size:14.8px;color:#dbe6f8}
+.art ul,.art ol{padding-left:22px}
+.art li{margin:5px 0}
+.art code{background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:5px;padding:1px 5px;font-size:13px}
+.art table{width:100%;border-collapse:collapse;margin:12px 0;font-size:13.8px}
+.art th,.art td{border:1px solid var(--line);padding:8px 10px;text-align:left}
+.art th{background:rgba(0,0,0,.22);color:var(--muted);font-weight:600}
+.note{background:rgba(249,115,22,.1);border:1px solid rgba(249,115,22,.35);border-radius:10px;padding:12px 14px;margin:14px 0;font-size:14px}
+.note b{color:var(--accent)}
+.side{position:sticky;top:74px;display:grid;gap:14px}
+.side-card{background:linear-gradient(180deg,var(--panel),var(--bg-2));border:1px solid var(--line);border-radius:12px;padding:14px}
+.side-card h3{margin:0 0 10px;font-size:13.5px;color:var(--muted);font-weight:600}
+.side-card a{display:block;font-size:13.5px;padding:5px 0;color:var(--text)}
+.side-card a:hover{color:var(--accent-2);text-decoration:none}
+.cta{display:block;text-align:center;background:linear-gradient(180deg,#fb923c,#ea580c);color:#fff;border-radius:10px;padding:11px;font-weight:700;font-size:14px}
+.cta:hover{text-decoration:none}
+@media (max-width:860px){.art-wrap{grid-template-columns:1fr}.side{position:static}}

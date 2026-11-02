@@ -1,0 +1,22 @@
+const fs = require('fs');
+const js = fs.readFileSync('assets/app.js', 'utf8');
+const html = fs.readFileSync('index.html', 'utf8');
+const ids = new Set([...js.matchAll(/getElementById\(\s*'([^']+)'/g)].map(m => m[1]));
+const qs = new Set([...js.matchAll(/\$\$?\(\s*'#([A-Za-z0-9_-]+)'/g)].map(m => m[1]));
+const all = [...new Set([...ids, ...qs])];
+// 动态拼接的 id 前缀（如 'bmi-' + i、'est-' + i + '-' + k）不是静态 id，跳过
+const DYNAMIC = ['bmi-', 'est-', 'slot-'];
+const missing = all.filter(id => !DYNAMIC.some(d => id === d) && html.indexOf('id="' + id + '"') === -1);
+console.log('app.js 引用的 id 共 ' + all.length + ' 个');
+console.log(missing.length ? 'index.html 里缺少: ' + missing.join(', ') : '全部存在于 index.html ✅');
+const htmlIds = [...html.matchAll(/id="([^"]+)"/g)].map(m => m[1]);
+const seen = {}, dups = [];
+htmlIds.forEach(i => { seen[i] = (seen[i] || 0) + 1; if (seen[i] === 2) dups.push(i); });
+console.log(dups.length ? 'index.html 重复 id: ' + dups.join(', ') : 'index.html 无重复 id ✅');
+const guides = fs.readdirSync('guide').filter(f => f.endsWith('.html'));
+const links = [...html.matchAll(/href="([^"#?]+\.html)"/g)].map(m => m[1]);
+const broken = links.filter(l => { const p = l.replace(/^\.\//, ''); return !fs.existsSync(p) && !fs.existsSync('guide/' + p); });
+console.log(broken.length ? '死链: ' + broken.join(', ') : 'index.html 内部链接全部有效 ✅');
+const glinks = [...fs.readFileSync('guide/index.html', 'utf8').matchAll(/href="([^"]+\.html)"/g)].map(m => m[1]);
+const gbroken = glinks.filter(l => !fs.existsSync('guide/' + l.replace(/^\.\//, '')));
+console.log('guide/index.html 死链: ' + (gbroken.length ? gbroken.join(', ') : '无 ✅') + '（教程 ' + guides.length + ' 页）');
