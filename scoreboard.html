@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>排球比赛计分器 · 五局三胜、25 分制、自动轮转</title>
+<meta name="description" content="免费在线排球计分器：每球得分制，25 分领先 2 分、决胜局 15 分，五局三胜或三局两胜；自动判断局点赛点，接发球得分自动换发球并提示轮转。手机上也能用。">
+<link rel="stylesheet" href="assets/style.css">
+</head>
+<body class="score-page">
+
+<header class="top">
+  <div class="top-inner">
+    <a class="logo" href="./">🏐 排球<span>战术台</span></a>
+    <nav class="nav">
+      <a href="./">站位与分析</a>
+      <a href="scoreboard.html">比赛计分</a>
+      <a href="guide/scoring-rules.html">计分规则</a>
+      <a href="guide/index.html">教程</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+  <section class="hero hero-tight">
+    <h1>排球比赛计分</h1>
+    <p class="sub">每球得分制 · 25 分领先 2 分 · 决胜局 15 分 · 接发球得分自动换发球并提示轮转</p>
+  </section>
+
+  <section class="panel">
+    <div class="panel-head">
+      <h2><span class="mno">◎</span>比分</h2>
+      <div class="hint">点你方“得分 +1”；比分存在本机，刷新不丢。键盘 A / B 也能加分。</div>
+    </div>
+
+    <div class="score-board">
+      <div class="sc-team" id="scTeamA">
+        <input class="sc-name" id="scNameA" value="我方" maxlength="10" aria-label="我方队名">
+        <div class="sc-num" id="scA">0</div>
+        <div class="sc-serve" id="scServeA">发球</div>
+        <button class="btn primary sc-btn" id="scBtnA">得分 +1</button>
+      </div>
+
+      <div class="sc-mid">
+        <div class="sc-sets"><span id="scSetsA">0</span><i>:</i><span id="scSetsB">0</span></div>
+        <div class="sc-setno" id="scSetNo">第 1 局</div>
+        <div class="sc-target" id="scTarget">25 分制 · 需领先 2 分</div>
+        <div class="sc-log" id="scLog"></div>
+      </div>
+
+      <div class="sc-team" id="scTeamB">
+        <input class="sc-name" id="scNameB" value="对手" maxlength="10" aria-label="对手队名">
+        <div class="sc-num" id="scB">0</div>
+        <div class="sc-serve" id="scServeB">发球</div>
+        <button class="btn ghost sc-btn" id="scBtnB">得分 +1</button>
+      </div>
+    </div>
+
+    <div class="sc-tools">
+      <label class="field inline"><span>赛制</span>
+        <select id="scBestOf">
+          <option value="5" selected>五局三胜</option>
+          <option value="3">三局两胜</option>
+        </select>
+      </label>
+      <label class="switch"><input type="checkbox" id="scAutoRotate" checked><span>我方拿回发球权时自动轮转</span></label>
+      <button class="btn small ghost" id="scUndo">撤销上一分</button>
+      <button class="btn small ghost" id="scResetSet">重置本局</button>
+      <button class="btn small ghost" id="scResetAll">重置全场</button>
+    </div>
+
+    <div class="sc-msg" id="scMsg"></div>
+
+    <div class="sc-rot">
+      <span class="rot-badge" id="scRound">第 1 轮</span>
+      <span class="tip" id="scRotNote">我方发球 · 这一轮按标准站位站好，发球后进接发球阵型</span>
+      <a class="btn small ghost" href="./">看六轮站位图 →</a>
+    </div>
+  </section>
+
+  <section class="panel small-panel">
+    <h2>计分规则速记</h2>
+    <ul class="rule-list">
+      <li><b>每球得分</b>：谁赢这一球谁得 1 分，不管发球的是谁。</li>
+      <li><b>换发球</b>：接发球方赢球 → 得 1 分并且换成自己发球。</li>
+      <li><b>轮转</b>：只有拿回发球权时才顺时针转一位（1→6→5→4→3→2）。</li>
+      <li><b>一局结束</b>：先到 25 分且领先 2 分；24:24 之后要一直打到领先 2 分。</li>
+      <li><b>决胜局</b>：第 5 局（三局两胜是第 3 局）打到 15 分，同样要领先 2 分。</li>
+      <li><b>局点 / 赛点</b>：再拿 1 分就能拿下这一局叫局点，能赢下整场叫赛点。</li>
+    </ul>
+    <p class="fine">细则看 <a href="guide/scoring-rules.html">排球计分规则</a>；轮转和站位看 <a href="guide/5-1-rotation.html">5-1 六轮站位</a>。</p>
+  </section>
+</main>
+
+<footer class="foot">
+  <div>排球战术台 · 纯静态零依赖 · 比分只存在你自己的浏览器里</div>
+  <div class="foot-links">
+    <a href="./">站位与分析</a>
+    <a href="guide/scoring-rules.html">计分规则</a>
+    <a href="guide/index.html">教程目录</a>
+  </div>
+</footer>
+
+<script src="assets/score.js"></script>
+</body>
+</html>

@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://shaoshaohua520.github.io/Volleyball-Tactics-Board/sitemap.xml

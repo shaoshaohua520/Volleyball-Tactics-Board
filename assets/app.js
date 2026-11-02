@@ -444,26 +444,26 @@
     return { id: 'r' + uid, name: name, pos: pos, height: h, spike: spike, block: block, hand: hand || '右', weight: weight == null ? '' : weight };
   }
 
+  // 录入区用一张紧凑的表：6 行球员 × 8 列，手机上横向滑动，不会挤成一团
   function renderCards() {
     var wrap = $('#playerCards');
-    wrap.innerHTML = '';
-    state.roster.forEach(function (p, i) {
-      var d = document.createElement('div');
-      d.className = 'pcard';
-      d.innerHTML =
-        '<div class="pc-head"><div class="idx">' + (i + 1) + '</div>' +
-        '<input class="pc-name" data-i="' + i + '" data-k="name" type="text" maxlength="12" placeholder="球员 ' + (i + 1) + ' 姓名（可空）" value="' + esc(p.name) + '">' +
-        '<span class="bmi-tag" id="bmi-' + i + '"></span></div>' +
-        '<div class="pgrid">' +
-        field(i, 'pos', '位置', p.pos, true) +
-        field(i, 'height', '身高 cm', p.height) +
-        field(i, 'weight', '体重 kg', p.weight) +
-        field(i, 'spike', '扣球高度 cm', p.spike) +
-        field(i, 'block', '拦网高度 cm', p.block) +
-        field(i, 'hand', '惯用手', p.hand, false, ['右', '左']) +
-        '</div>';
-      wrap.appendChild(d);
-    });
+    var rows = state.roster.map(function (p, i) {
+      return '<tr>' +
+        '<td class="pi">' + (i + 1) + '</td>' +
+        '<td class="pn"><input class="pc-name" data-i="' + i + '" data-k="name" type="text" maxlength="12" placeholder="可空" value="' + esc(p.name) + '"></td>' +
+        '<td>' + posCell(i, p.pos) + '</td>' +
+        numCell(i, 'height', p.height) +
+        numCell(i, 'weight', p.weight) +
+        numCell(i, 'spike', p.spike) +
+        numCell(i, 'block', p.block) +
+        '<td>' + handCell(i, p.hand) + '</td>' +
+        '<td class="pbmi"><span class="bmi-tag" id="bmi-' + i + '"></span></td>' +
+        '</tr>';
+    }).join('');
+    wrap.innerHTML = '<div class="ptable-wrap"><table class="ptable"><thead><tr>' +
+      '<th class="pi">#</th><th>姓名</th><th>位置</th><th>身高<br><i>cm</i></th><th>体重<br><i>kg</i></th>' +
+      '<th>扣球<br><i>cm</i></th><th>拦网<br><i>cm</i></th><th>惯手</th><th>BMI</th>' +
+      '</tr></thead><tbody>' + rows + '</tbody></table></div>';
     $$('#playerCards input, #playerCards select').forEach(function (el) {
       el.addEventListener('input', onCardChange);
       el.addEventListener('change', onCardChange);
@@ -471,20 +471,21 @@
     updateBmiTags();
   }
 
-  function field(i, k, label, val, isSelect, options) {
-    if (k === 'pos') {
-      return '<div class="field"><label>' + label + '</label><select data-i="' + i + '" data-k="pos">' +
-        ROLE_ORDER.map(function (o) { return '<option value="' + o + '"' + (o === val ? ' selected' : '') + '>' + o + '</option>'; }).join('') +
-        '</select></div>';
-    }
-    if (k === 'hand') {
-      return '<div class="field"><label>' + label + '</label><select data-i="' + i + '" data-k="hand">' +
-        options.map(function (o) { return '<option value="' + o + '"' + (o === val ? ' selected' : '') + '>' + o + '手</option>'; }).join('') +
-        '</select></div>';
-    }
+  function posCell(i, val) {
+    return '<select data-i="' + i + '" data-k="pos">' +
+      ROLE_ORDER.map(function (o) { return '<option value="' + o + '"' + (o === val ? ' selected' : '') + '>' + o + '</option>'; }).join('') +
+      '</select>';
+  }
+  function handCell(i, val) {
+    return '<select data-i="' + i + '" data-k="hand">' +
+      ['右', '左'].map(function (o) { return '<option value="' + o + '"' + (o === val ? ' selected' : '') + '>' + o + '</option>'; }).join('') +
+      '</select>';
+  }
+  function numCell(i, k, val) {
     var lim = k === 'weight' ? ' min="25" max="200"' : ' min="120" max="260"';
-    return '<div class="field"><label>' + label + '<span class="est" id="est-' + i + '-' + k + '"></span></label>' +
-      '<input data-i="' + i + '" data-k="' + k + '" type="number"' + lim + ' step="1" placeholder="—" value="' + esc(val) + '"></div>';
+    var est = (k === 'spike' || k === 'block') ? '<span class="est" id="est-' + i + '-' + k + '"></span>' : '';
+    return '<td class="pnum"><input data-i="' + i + '" data-k="' + k + '" type="number"' + lim +
+      ' step="1" placeholder="—" value="' + esc(val) + '">' + est + '</td>';
   }
 
   function onCardChange(e) {
@@ -600,28 +601,20 @@
     }
 
     shown.forEach(function (t, idx) {
-      var card = document.createElement('div');
-      card.className = 'wcard';
-      var head = '<h4><b class="rk">#' + (idx + 1) + '</b>' + esc(t.team) + '<span>' + t.n + ' 人</span></h4>';
-      var body;
-      if (t.reliable) {
-        body = bar('平均身高', t.height, 210, ' cm') +
-          bar('平均扣球高度', t.spike, 370, ' cm') +
-          bar('平均拦网高度', t.block, 350, ' cm') +
-          '<div class="wmeta">' + t.n + ' 人平均 · 最高扣球 ' + (t.maxSpike ? fmt(t.maxSpike) + ' cm' : '—') + '</div>';
-      } else {
-        var line = t.players.map(function (p) {
-          var bits = [esc(p.name || '未具名')];
-          if (!isNaN(num(p.height))) bits.push(fmt(num(p.height)) + ' cm');
-          if (!isNaN(num(p.spike))) bits.push('扣 ' + fmt(num(p.spike)));
-          if (!isNaN(num(p.block))) bits.push('拦 ' + fmt(num(p.block)));
-          return bits.join(' ');
-        }).join('　·　');
-        body = '<p class="sample-warn">样本只有 ' + t.n + ' 人，<b>不计算平均值</b>。个人数据：</p>' +
-          '<div class="wmeta">' + line + '</div>';
-      }
-      card.innerHTML = head + body + playerList(t.players);
-      wrap.appendChild(card);
+      var row = document.createElement('div');
+      row.className = 'wrow' + (t.reliable ? '' : ' tiny') + (idx === 0 && t.reliable ? ' top1' : '');
+      var stats = t.reliable
+        ? '身高 <b>' + fmt(t.height) + '</b>　扣球 <b>' + fmt(t.spike) + '</b>　拦网 <b>' + fmt(t.block) + '</b>'
+        : '最高 <b>' + (t.maxHeight ? fmt(t.maxHeight) : '—') + '</b>　最高扣球 <b>' + (t.maxSpike ? fmt(t.maxSpike) : '—') + '</b>' +
+          '<span class="wtag">' + t.n + ' 人 · 不算平均</span>';
+      row.innerHTML =
+        '<div class="wr-main">' +
+        '<span class="wrk">#' + (idx + 1) + '</span>' +
+        '<span class="wteam">' + esc(t.team) + '</span>' +
+        '<span class="wn">' + t.n + ' 人</span>' +
+        '<span class="wstat">' + stats + '</span></div>' +
+        playerList(t.players);
+      wrap.appendChild(row);
     });
   }
 
@@ -647,11 +640,7 @@
       '<table><thead><tr><th>球员</th><th>位置</th><th>身高</th><th>扣球</th><th>拦网</th></tr></thead><tbody>' +
       rows + '</tbody></table></details>';
   }
-  function bar(label, val, max, unit) {
-    var pct = isNaN(val) ? 0 : clamp(val / max * 100, 0, 100);
-    return '<div class="bar"><div class="bl"><span>' + label + '</span><b>' + fmt(val) + unit + '</b></div>' +
-      '<div class="bt"><div class="bf" style="width:' + pct + '%"></div></div></div>';
-  }
+  
 
   /* ---------------- 分析引擎 ---------------- */
 
@@ -973,136 +962,6 @@
     box.innerHTML = html;
   }
 
-  /* ---------------- 比赛计分（每球得分制） ---------------- */
-
-  var match = {
-    a: 0, b: 0,          // 本局比分
-    setsA: 0, setsB: 0,  // 局分
-    setNo: 1,
-    serve: 'a',          // 谁发球
-    bestOf: 5,
-    over: false,
-    log: [],             // 已结束的局
-    hist: []             // 撤销用的快照
-  };
-
-  function scName(side) {
-    var el = $(side === 'a' ? '#scNameA' : '#scNameB');
-    var v = el && el.value ? el.value.trim() : '';
-    return v || (side === 'a' ? '我方' : '对手');
-  }
-  function isDecidingSet() {
-    return (match.bestOf === 5 && match.setNo === 5) || (match.bestOf === 3 && match.setNo === 3);
-  }
-  function targetPoints() { return isDecidingSet() ? 15 : 25; }
-  function setsToWin() { return match.bestOf === 5 ? 3 : 2; }
-
-  function scSnap() {
-    return JSON.stringify({
-      a: match.a, b: match.b, setsA: match.setsA, setsB: match.setsB,
-      setNo: match.setNo, serve: match.serve, over: match.over, log: match.log
-    });
-  }
-  function scRestore(s) {
-    var o = JSON.parse(s);
-    match.a = o.a; match.b = o.b; match.setsA = o.setsA; match.setsB = o.setsB;
-    match.setNo = o.setNo; match.serve = o.serve; match.over = o.over; match.log = o.log;
-  }
-  function scPush() {
-    match.hist.push(scSnap());
-    if (match.hist.length > 100) match.hist.shift();
-  }
-
-  function pointTo(side) {
-    if (match.over) return;
-    scPush();
-    var other = side === 'a' ? 'b' : 'a';
-    match[side] += 1;
-
-    // 接发球方赢下这一球 → 换发球；我方拿回发球权时跟着轮转一位
-    if (side !== match.serve) {
-      match.serve = side;
-      var auto = $('#scAutoRotate');
-      if (side === 'a' && auto && auto.checked) {
-        state.round = state.round === 6 ? 1 : state.round + 1;
-        resetDragPos();
-        renderCourt();
-      }
-    }
-
-    var tgt = targetPoints();
-    if (match[side] >= tgt && match[side] - match[other] >= 2) endSet(side);
-    renderScore();
-  }
-
-  function endSet(winner) {
-    match.log.push({ set: match.setNo, a: match.a, b: match.b, w: winner });
-    if (winner === 'a') match.setsA += 1; else match.setsB += 1;
-    match.a = 0;
-    match.b = 0;
-    match.serve = winner;
-    if (match.setsA >= setsToWin() || match.setsB >= setsToWin()) match.over = true;
-    else match.setNo += 1;
-  }
-
-  function resetMatch() {
-    match.a = 0; match.b = 0;
-    match.setsA = 0; match.setsB = 0;
-    match.setNo = 1; match.serve = 'a';
-    match.over = false; match.log = []; match.hist = [];
-    renderScore();
-  }
-
-  function renderScore() {
-    if (!$('#scA')) return;
-    $('#scA').textContent = match.a;
-    $('#scB').textContent = match.b;
-    $('#scSetsA').textContent = match.setsA;
-    $('#scSetsB').textContent = match.setsB;
-
-    var deciding = isDecidingSet() && !match.over;
-    $('#scSetNo').textContent = match.over ? '比赛结束' : ('第 ' + match.setNo + ' 局' + (deciding ? '（决胜局）' : ''));
-    $('#scTarget').textContent = match.over ? '' : targetPoints() + ' 分制 · 需领先 2 分';
-
-    var live = !match.over;
-    $('#scServeA').classList.toggle('on', live && match.serve === 'a');
-    $('#scServeB').classList.toggle('on', live && match.serve === 'b');
-    $('#scTeamA').classList.toggle('serving', live && match.serve === 'a');
-    $('#scTeamB').classList.toggle('serving', live && match.serve === 'b');
-    $('#scBtnA').disabled = match.over;
-    $('#scBtnB').disabled = match.over;
-
-    $('#scLog').innerHTML = match.log.map(function (m) {
-      return '<span class="sl">第' + m.set + '局 ' + m.a + ':' + m.b + ' <b>' + esc(m.w === 'a' ? scName('a') : scName('b')) + '</b> 胜</span>';
-    }).join('');
-
-    var msg = '', cls = '';
-    if (match.over) {
-      var winA = match.setsA > match.setsB;
-      msg = '比赛结束：' + esc(winA ? scName('a') : scName('b')) + ' 以 ' +
-        Math.max(match.setsA, match.setsB) + ':' + Math.min(match.setsA, match.setsB) + ' 获胜';
-      if (!winA) msg += '　（可以先补短板，再点“重置全场”重来）';
-      cls = winA ? 'good' : 'bad';
-    } else {
-      var tgt = targetPoints(), sp = null;
-      ['a', 'b'].forEach(function (s) {
-        if (sp) return;
-        var o = s === 'a' ? 'b' : 'a';
-        if (match[s] + 1 >= tgt && match[s] + 1 - match[o] >= 2) sp = s;
-      });
-      if (sp) {
-        var wouldWin = (sp === 'a' ? match.setsA + 1 : match.setsB + 1) >= setsToWin();
-        msg = (wouldWin ? '赛点：' : '局点：') + esc(scName(sp)) + ' 再拿 1 分就' + (wouldWin ? '赢下比赛' : '拿下这一局');
-        cls = 'hot';
-      } else {
-        msg = '发球方：' + esc(scName(match.serve)) + '　·　接发球方赢下这一球就换发球并轮转';
-      }
-    }
-    var mEl = $('#scMsg');
-    mEl.className = 'sc-msg ' + cls;
-    mEl.innerHTML = msg;
-  }
-
   /* ---------------- 事件绑定 ---------------- */
 
   function bind() {
@@ -1151,26 +1010,6 @@
       if (state.world) renderWorld(state.world);
     });
 
-    /* ---- 比赛计分 ---- */
-    $('#scBtnA').addEventListener('click', function () { pointTo('a'); });
-    $('#scBtnB').addEventListener('click', function () { pointTo('b'); });
-    $('#scUndo').addEventListener('click', function () {
-      if (!match.hist.length) return;
-      scRestore(match.hist.pop());
-      renderScore();
-    });
-    $('#scResetSet').addEventListener('click', function () {
-      scPush(); match.a = 0; match.b = 0; renderScore();
-    });
-    $('#scResetAll').addEventListener('click', function () { resetMatch(); });
-    $('#scBestOf').addEventListener('change', function (e) {
-      match.bestOf = +e.target.value === 3 ? 3 : 5;
-      resetMatch();
-    });
-    ['#scNameA', '#scNameB'].forEach(function (s) {
-      var el = $(s);
-      if (el) el.addEventListener('input', renderScore);
-    });
     // 键盘左右键切轮次（在输入框里打字时不拦）
     document.addEventListener('keydown', function (e) {
       var tag = e.target && e.target.tagName;
@@ -1224,6 +1063,5 @@
   applyQuery();
   syncShiftBtn();
   renderCourt();
-  renderScore();
   loadWorld();
 })();
