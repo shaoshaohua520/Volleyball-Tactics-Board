@@ -337,6 +337,8 @@ table.cmp .tk-st{font-size:14px;letter-spacing:.5px}
   .court-tools .tool-row:nth-child(5),
   .court-tools .legend{grid-column:1/-1}
   .court-tools .tool-row:nth-child(4){justify-self:start}
+  .court-tools select{max-width:100%}
+  .court-tools .switch{font-size:12px}
   .legend{grid-template-columns:repeat(3,auto);gap:4px 8px;font-size:11px}
   .round-info{font-size:12.5px;padding:10px 11px}
   .net-label{font-size:10px;right:6px;top:6px;padding:1px 6px}
